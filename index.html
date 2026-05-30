@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patent Keyword Extractor</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Patent analysis</p>
+            <h1>Keyword Extractor</h1>
+          </div>
+          <div class="top-actions">
+            <div class="language-toggle" aria-label="Language mode">
+              <button class="language-button active" id="englishModeButton" type="button" data-language="en">EN</button>
+              <button class="language-button" id="japaneseModeButton" type="button" data-language="ja">日本語</button>
+            </div>
+            <div class="status-pill" id="documentStatus">No document loaded</div>
+          </div>
+        </header>
+
+        <section class="input-panel" aria-label="Patent text input">
+          <div class="drop-zone" id="dropZone">
+            <input id="fileInput" type="file" accept=".txt,.md,.text,.csv,.rtf" />
+            <div class="drop-copy">
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <strong id="uploadTitle">Upload patent text</strong>
+              <span id="uploadHelp">Drop a text file here or choose one from your device.</span>
+            </div>
+            <button class="secondary-button" id="chooseFileButton" type="button">Choose file</button>
+          </div>
+
+          <label class="text-label" id="textLabel" for="patentText">Patent text</label>
+          <textarea
+            id="patentText"
+            spellcheck="false"
+            placeholder="Paste the abstract, claims, or full patent description here..."
+          ></textarea>
+
+          <div class="controls">
+            <button class="primary-button" id="analyzeButton" type="button">Extract keywords</button>
+            <button class="ghost-button" id="sampleButton" type="button">Load sample</button>
+            <button class="ghost-button" id="downloadPdfButton" type="button">Download PDF</button>
+            <button class="icon-button" id="clearButton" type="button" title="Clear text" aria-label="Clear text">×</button>
+          </div>
+        </section>
+      </section>
+
+      <aside class="results-panel" aria-label="Analysis results">
+        <nav class="tabs" aria-label="Result views">
+          <button class="tab active" id="keywordsTab" type="button" data-tab="keywords">Keywords</button>
+          <button class="tab" id="clustersTab" type="button" data-tab="clusters">Clusters</button>
+          <button class="tab" id="summaryTab" type="button" data-tab="summary">Signals</button>
+        </nav>
+
+        <section class="tab-panel active" id="keywordsPanel">
+          <div class="panel-heading">
+            <h2 id="keywordsHeading">Technical Keywords</h2>
+            <span id="keywordCount">0 found</span>
+          </div>
+          <div class="keyword-list empty-state" id="keywordList">Add patent text to extract ranked technical terms.</div>
+        </section>
+
+        <section class="tab-panel" id="clustersPanel">
+          <div class="panel-heading">
+            <h2 id="clustersHeading">CPC/IPC-like Clusters</h2>
+            <span id="clusterCount">0 matches</span>
+          </div>
+          <div class="cluster-list empty-state" id="clusterList">Clusters appear after analysis.</div>
+        </section>
+
+        <section class="tab-panel" id="summaryPanel">
+          <div class="panel-heading">
+            <h2 id="signalsHeading">Document Signals</h2>
+            <span id="wordCount">0 words</span>
+          </div>
+          <dl class="signal-grid" id="signalGrid">
+            <div>
+              <dt>Sections</dt>
+              <dd>0</dd>
+            </div>
+            <div>
+              <dt>Unique terms</dt>
+              <dd>0</dd>
+            </div>
+            <div>
+              <dt>Claims cues</dt>
+              <dd>0</dd>
+            </div>
+            <div>
+              <dt>Technical density</dt>
+              <dd>0%</dd>
+            </div>
+          </dl>
+          <div class="insight-box" id="insightBox">Analysis notes will appear here.</div>
+        </section>
+      </aside>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
