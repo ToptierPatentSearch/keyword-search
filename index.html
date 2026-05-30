@@ -41,6 +41,15 @@
             placeholder="Paste the abstract, claims, or full patent description here..."
           ></textarea>
 
+          <section class="api-panel" aria-label="OpenAI API configuration">
+            <label class="text-label" id="apiKeyLabel" for="apiKeyInput">OpenAI API key</label>
+            <div class="api-row">
+              <input id="apiKeyInput" type="password" autocomplete="off" placeholder="sk-..." />
+              <button class="secondary-button" id="saveApiKeyButton" type="button">Save key</button>
+            </div>
+            <p class="api-help" id="apiHelp">Stored in this browser only. Required to parse with GPT-5.5.</p>
+          </section>
+
           <div class="controls">
             <button class="primary-button" id="analyzeButton" type="button">Extract keywords</button>
             <button class="ghost-button" id="sampleButton" type="button">Load sample</button>
