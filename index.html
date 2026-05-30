@@ -34,6 +34,12 @@
             <button class="secondary-button" id="chooseFileButton" type="button">Choose file</button>
           </div>
 
+          <div class="api-panel">
+            <label class="text-label" id="apiKeyLabel" for="apiKey">OpenAI API key</label>
+            <input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="OpenAI API key" />
+            <p id="apiHint">Used locally to parse text with GPT-5.5. Leave blank to use the offline extractor.</p>
+          </div>
+
           <label class="text-label" id="textLabel" for="patentText">Patent text</label>
           <textarea
             id="patentText"
