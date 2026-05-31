@@ -29,7 +29,42 @@ function boost(term,text){let b=0;for(const c of clusters)for(const w of [...c.t
 function extract(text){const counts=new Map,phrases=new Map,et=enTokens(text),jt=jaTokens(text);for(const tok of [...et,...jt])if(technical(tok))counts.set(tok,(counts.get(tok)||0)+1);for(let n=2;n<=3;n++)for(let i=0;i<=et.length-n;i++){const p=et.slice(i,i+n).filter(technical);if(p.length===n&&!p.every(x=>generic.has(x)))phrases.set(p.join(" "),(phrases.get(p.join(" "))||0)+1)}for(const w of jpHints){const c=text.split(w).length-1;if(c&&goodJa(w))counts.set(w,Math.max(counts.get(w)||0,c))}const score=(term,c)=>Math.min(c,6)*1.2+(hasJa(term)?Math.min(term.length,10)/2.8:Math.log(2+term.length))+boost(term,text);const a=[...[...counts].map(([term,count])=>({term,count,type:"term",score:score(term,count),evidence:evidence(text,term)})),...[...phrases].filter(([p,c])=>c>1||clusters.some(r=>r.terms.some(w=>p.includes(w)))).map(([term,count])=>({term,count,type:"phrase",score:score(term,count)+term.split(" ").length*1.2,evidence:evidence(text,term)}))];const seen=new Set;return a.filter(x=>x.score>2.4).sort((a,b)=>b.score-a.score||b.count-a.count||a.term.localeCompare(b.term,lang==="ja"?"ja":"en")).filter(x=>{const k=x.term;if(seen.has(k))return false;seen.add(k);return true}).slice(0,18)}
 function scoreClusters(text,kws){const terms=new Set([...enTokens(text),...jaTokens(text)].filter(technical));const src=(text+" "+kws.map(k=>k.term).join(" ")).toLowerCase();return clusters.map(c=>{const me=c.terms.filter(w=>new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}\\b`,"i").test(src)||terms.has(w));const mj=c.jaTerms.filter(w=>terms.has(w)||src.includes(w.toLowerCase()));const matched=[...new Set([...me,...mj])];const support=kws.filter(k=>matched.some(w=>k.term.includes(w)||w.includes(k.term))).length;const score=Math.min(98,Math.round(matched.length*9+support*4+(matched.length>=3?12:0)));return{...c,matched,score,confidence:score>=70?"high":score>=42?"medium":"low"}}).filter(c=>c.matched.length>=2||c.score>=38).sort((a,b)=>b.score-a.score||b.matched.length-a.matched.length).slice(0,5)}
 function signals(text,kws){const toks=[...enTokens(text),...jaTokens(text)].filter(technical),u=new Set(toks);const sec=[...(text.match(/\b(abstract|background|summary|description|claims?|examples?)\b/gi)||[]),...(text.match(/(要約|背景技術|発明の概要|詳細な説明|請求項|実施例)/g)||[])];const cue=[...(text.match(/\b(wherein|comprising|configured to|adapted to|consisting of|according to claim)\b/gi)||[]),...(text.match(/(備える|含む|構成され|請求項|であって|特徴とする|有する)/g)||[])];return{words:enTokens(text).length+(hasJa(text)?jaTokens(text).length:0),uniqueTerms:u.size,sections:new Set(sec.map(x=>x.toLowerCase())).size,claimsCues:cue.length,density:toks.length?Math.min(100,Math.round(u.size/toks.length*100)):0,topKeyword:kws[0]?.term||tr().none}}
-function analyze(){const text=el.text.value.trim();if(!text)return renderEmpty();const keywords=extract(text),cls=scoreClusters(text,keywords),sig=signals(text,keywords);last={text,keywords,clusters:cls,signals:sig,language:lang};renderKeywords(keywords);renderClusters(cls);renderSignals(sig,cls);setStatus("ready")}
+async function analyze(){
+
+    const text = el.text.value.trim();
+
+    if(!text){
+        renderEmpty();
+        return;
+    }
+
+    setStatus("draft");
+
+    const response = await fetch(
+        "https://xokeajplozstmjpuigia.supabase.co/functions/v1/openai-proxy",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                prompt: text
+            })
+        }
+    );
+
+    const data = await response.json();
+
+    console.log(data);
+
+    // temporarily show result
+    el.kw.innerHTML =
+        "<pre>" +
+        JSON.stringify(data, null, 2) +
+        "</pre>";
+
+    setStatus("ready");
+}
 function renderKeywords(kws){el.kwc.textContent=tr().kwc(kws.length);if(!kws.length){el.kw.className="keyword-list empty-state";el.kw.textContent=tr().noKw;return}const max=Math.max(...kws.map(x=>x.score));el.kw.className="keyword-list";el.kw.innerHTML=kws.map((x,i)=>`<article class="keyword-item"><span class="rank">${i+1}</span><div><div class="keyword-name">${esc(fmt(x.term))}</div><div class="keyword-meta">${x.type==="phrase"?tr().phrase:tr().term} · ${tr().occ(x.count)}</div>${x.evidence?`<div class="keyword-evidence">${esc(x.evidence)}</div>`:""}</div><div class="score-bar"><span style="width:${Math.max(12,Math.round(x.score/max*100))}%"></span></div></article>`).join("")}
 function renderClusters(cls){el.clc.textContent=tr().clc(cls.length);if(!cls.length){el.cl.className="cluster-list empty-state";el.cl.textContent=tr().noCl;return}el.cl.className="cluster-list";el.cl.innerHTML=cls.map(c=>`<article class="cluster-item"><div class="cluster-top"><span class="cluster-code">${esc(c.code)}</span><span class="cluster-score">${tr().fit(c.score)} · ${tr().conf[c.confidence]}</span></div><div class="cluster-title">${esc(lang==="ja"?c.jaTitle:c.title)}</div><div class="chip-row">${c.matched.map(w=>`<span class="chip">${esc(w)}</span>`).join("")}</div></article>`).join("")}
 function renderSignals(s,cls){el.wc.textContent=tr().wc(s.words);el.signals.innerHTML=`<div><dt>${tr().sig[0]}</dt><dd>${s.sections}</dd></div><div><dt>${tr().sig[1]}</dt><dd>${s.uniqueTerms}</dd></div><div><dt>${tr().sig[2]}</dt><dd>${s.claimsCues}</dd></div><div><dt>${tr().sig[3]}</dt><dd>${s.density}%</dd></div>`;const c=cls[0]?(lang==="ja"?cls[0].jaTitle:cls[0].title):tr().noCluster;el.insight.textContent=tr().ins(fmt(s.topKeyword),c)}
