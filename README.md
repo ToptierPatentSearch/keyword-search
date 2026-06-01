@@ -4,7 +4,7 @@ A local browser app for extracting technical keywords from patent text and sugge
 
 ## Features
 
-- Upload or paste patent text
+- Upload or paste patent text, including normalized TXT/Markdown/CSV/RTF input
 - Extract ranked technical keywords with evidence snippets using GPT-5.5 when an OpenAI API key is provided, with an offline fallback
 - Suggest CPC/IPC-like clusters with confidence labels
 - Switch between English and Japanese mode
@@ -12,4 +12,4 @@ A local browser app for extracting technical keywords from patent text and sugge
 
 ## Use
 
-Open `index.html` in a browser. Paste an OpenAI API key into the API key field to parse patent text with GPT-5.5; leave it blank to use the built-in offline extractor. The app runs entirely client-side, and the key is stored only in browser session storage.
+Open `index.html` in a browser. Paste an OpenAI API key into the API key field to parse normalized patent text with GPT-5.5; leave it blank to use the built-in offline extractor. Uploaded CSV and RTF files are converted to plain patent text before analysis. The app runs entirely client-side, and the key is stored only in browser session storage.
